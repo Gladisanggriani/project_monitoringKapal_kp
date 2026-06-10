@@ -8,6 +8,8 @@ Route::get('/kapal/export-data', [KapalController::class, 'export'])->name('kapa
 // --- AKSES VIEWER (Publik - Tanpa Login) ---
 // Halaman utama menampilkan dashboard monitoring kapal untuk publik
 Route::get('/', [KapalController::class, 'index'])->name('dashboard');
+
+
  
 // --- AKSES ADMIN (Wajib Login).. ---
 Route::middleware(['auth'])->group(function () {
@@ -18,11 +20,13 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/kapal/{kapal}', [KapalController::class, 'update'])->name('kapal.update');
     Route::delete('/kapal/{kapal}', [KapalController::class, 'destroy'])->name('kapal.destroy');
     
-    // Fitur Tambahan (Opsional)
-    Route::get('/kapal/export', [KapalController::class, 'export'])->name('kapal.export');
 });
 
+Route::get('/kapal/preview-export', [KapalController::class, 'previewExport'])
+    ->name('kapal.preview-export');
 
+Route::get('/kapal/export-data', [KapalController::class, 'export'])
+    ->name('kapal.export');
 
 // Memuat rute autentikasi bawaan dari Laravel Breeze (Login, Register, Logout)
 require __DIR__.'/auth.php';

@@ -45,9 +45,11 @@
                         <span>+ Input Data</span>
                     </a>
                 @endauth
-                <a href="{{ route('kapal.export') }}" target="_blank"
+                <a href="{{ route('kapal.preview-export') }}"
                     class="bg-red-800 hover:bg-red-900 text-white border border-red-500 px-4 py-2.5 rounded-xl text-sm font-semibold transition inline-block text-center shadow-sm">
+
                     Export Excel
+
                 </a>
             </div>
         </div>
