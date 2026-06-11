@@ -112,6 +112,31 @@
 
         transform: rotate(-8deg) scale(1.08);
     }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    @keyframes popupAnimation {
+
+        from {
+            opacity: 0;
+            transform:
+                scale(.8) translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform:
+                scale(1) translateY(0);
+        }
+    }
+
+    .animate-popup {
+
+        animation:
+            popupAnimation .35s ease;
+    }
 </style>
 
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -145,10 +170,12 @@
                 <p class="text-red-100 text-sm mt-1">Monitoring aktivitas kapal pengangkut semen secara real-time</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('kapal.create') }}"
-                    class="bg-white hover:bg-gray-50 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-2">
-                    <span>+ Input Data</span>
-                </a>
+                @if (Auth::check() && Auth::user()->role === 'admin')
+                    <a href="{{ route('kapal.create') }}"
+                        class="bg-white hover:bg-gray-50 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-2">
+                        <span>+ Input Data</span>
+                    </a>
+                @endif
 
                 <a href="{{ route('kapal.preview-export') }}"
                     class="bg-red-800 hover:bg-red-900 text-white border border-red-500 px-4 py-2.5 rounded-xl text-sm font-semibold transition inline-block text-center shadow-sm">
@@ -165,8 +192,10 @@
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
 
-            <div id="card-all" onclick="filterTable('all', this)" class="dashboard-card active">
-
+            <div onclick='showKapal(
+"🚢 Daftar Kapal Hari Ini",
+@json($kapals->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
                 <div class="flex justify-between items-center">
 
                     <div>
@@ -181,7 +210,7 @@
 
                     </div>
 
-                    <div class="icon-box bg-red-100">
+                    <div class="icon-box" style="background:#ffb0b0;">
                         🚢
                     </div>
 
@@ -189,8 +218,10 @@
 
             </div>
 
-            <div onclick="filterTable('Menunggu Sandar', this)" class="dashboard-card">
-
+            <div onclick='showKapal(
+"⏳ Kapal Menunggu Sandar",
+@json($kapals->where('status', 'Menunggu Sandar')->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
                 <div class="flex justify-between items-center">
 
                     <div>
@@ -213,8 +244,10 @@
 
             </div>
 
-            <div onclick="filterTable('Sedang Muat', this)" class="dashboard-card">
-
+            <div onclick='showKapal(
+"⚓ Kapal Sedang Muat",
+@json($kapals->where('status', 'Sedang Muat')->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
                 <div class="flex justify-between items-center">
 
                     <div>
@@ -237,7 +270,10 @@
 
             </div>
 
-            <div onclick="filterTable('Selesai', this)" class="dashboard-card">
+            <div onclick='showKapal(
+"✅ Kapal Selesai",
+@json($kapals->where('status', 'Selesai')->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
 
                 <div class="flex justify-between items-center">
 
@@ -262,6 +298,36 @@
             </div>
 
         </div>
+
+        </div>
+
+        <script>
+            const kapalData = {
+                all: [
+                    @foreach ($kapals as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ],
+
+                menunggu: [
+                    @foreach ($kapals->where('status', 'Menunggu Sandar') as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ],
+
+                muat: [
+                    @foreach ($kapals->where('status', 'Sedang Muat') as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ],
+
+                selesai: [
+                    @foreach ($kapals->where('status', 'Selesai') as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ]
+            };
+        </script>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
@@ -363,37 +429,152 @@
             </div>
         </div>
     </main>
+
+    <!-- MODAL PREMIUM -->
+    <div id="infoModal" class="hidden fixed inset-0 z-[99999]">
+
+        <!-- Overlay -->
+        <div onclick="closeModal()" class="absolute inset-0"
+            style="
+        background:rgba(0,0,0,.45);
+        backdrop-filter:blur(8px);
+        -webkit-backdrop-filter:blur(8px);">
+        </div>
+
+        <!-- Popup -->
+        <div class="fixed inset-0 flex items-center justify-center px-4">
+            <div class="animate-popup bg-white overflow-hidden"
+                style="width:520px; max-width:92%;
+        border-radius:28px;
+        box-shadow:
+            0 30px 80px rgba(0,0,0,.18),
+            0 10px 30px rgba(220,38,38,.12);">
+
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-700 to-red-600 px-6 py-5">
+
+                    <div class="flex justify-between items-center">
+
+                        <h2 id="modalTitle" class="text-xl font-bold text-white">
+                        </h2>
+
+                        <button type="button" onclick="closeModal(); return false;"
+                            class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white transition">
+                            ✕
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- Body -->
+                <div class="p-6">
+                    <div class="bg-gray-50 rounded-2xl p-5 max-h-[400px] overflow-y-auto">
+                        <div id="modalText">
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="closeModal(); return false;"
+                        class="w-full mt-5 bg-gradient-to-r from-red-700 to-red-600 text-white py-3 rounded-xl font-semibold">
+                        Tutup
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
     <script>
-        function filterTable(status, card) {
+        function showKapal(title, data) {
 
-            document
-                .querySelectorAll('.dashboard-card')
-                .forEach(c => c.classList.remove('active'));
+            document.getElementById('modalTitle').innerHTML = title;
 
-            card.classList.add('active');
+            let html = '';
 
-            const rows =
-                document.querySelectorAll(
-                    'tbody tr[data-status]'
-                );
+            if (data.length === 0) {
 
-            rows.forEach(row => {
+                html = `
+                <div class="text-center py-10">
+                    <div class="text-5xl mb-3">🚢</div>
+                    <div class="text-gray-500">
+                        Tidak ada data kapal
+                    </div>
+                </div>
+            `;
 
-                if (status === 'all') {
+            } else {
 
-                    row.style.display = '';
+                html += `
+                <div class="mb-4 text-sm text-gray-500">
+                    Total Kapal : <b>${data.length}</b>
+                </div>
+            `;
 
-                } else {
+                data.forEach(function(item) {
 
-                    row.style.display =
-                        row.dataset.status === status ?
-                        '' :
-                        'none';
-                }
+                    html += `
+                    <div class="
+                        flex items-center gap-4
+                        bg-gradient-to-r from-red-50 to-white
+                        border border-red-100
+                        rounded-2xl
+                        px-4 py-3
+                        mb-3
+                        hover:shadow-md
+                        transition">
 
-            });
+                        <div class="
+                            w-12 h-12
+                            flex items-center justify-center
+                            rounded-full
+                            bg-red-100
+                            text-xl">
+                            🚢
+                        </div>
 
+                        <div>
+                            <div class="font-semibold text-gray-800">
+                                ${item}
+                            </div>
+
+                            <div class="text-xs text-gray-500">
+                                Monitoring Kapal
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+                });
+
+            }
+
+            document.getElementById('modalText').innerHTML = html;
+
+            document.getElementById('infoModal')
+                .classList.remove('hidden');
+
+            document.body.classList.add('modal-open');
         }
+
+        function closeModal() {
+
+            document.getElementById('infoModal')
+                .classList.add('hidden');
+
+            document.body.classList.remove('modal-open');
+        }
+
+        document.addEventListener('keydown', function(e) {
+
+            if (e.key === 'Escape') {
+
+                closeModal();
+            }
+
+        });
     </script>
 </body>
 
