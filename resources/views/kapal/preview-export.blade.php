@@ -15,33 +15,28 @@
 
         <!-- HEADER -->
         <div
-            class="bg-gradient-to-r from-red-700 to-red-600 rounded-3xl p-8 text-white shadow-lg shadow-red-200/50 mb-8">
+            class="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl p-6 md:p-8 text-white shadow-md mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight">
+                    Preview Export Data
+                </h1>
 
-                <div>
-                    <h1 class="text-3xl font-extrabold tracking-tight">
-                        Preview Export Data
-                    </h1>
+                <p class="text-red-100 mt-2">
+                    Filter dan unduh laporan monitoring kapal
+                </p>
+            </div>
 
-                    <p class="text-red-100 mt-2">
-                        Filter dan unduh laporan monitoring kapal
-                    </p>
-                </div>
+            <div>
+                <a href="{{ route('dashboard') }}"
+                    class="bg-white text-red-700 hover:bg-gray-100 px-5 py-3 rounded-xl font-semibold transition shadow-sm inline-block">
 
-                <div>
-                    <a href="{{ route('dashboard') }}"
-                        class="bg-white text-red-700 hover:bg-gray-100 px-5 py-3 rounded-xl font-semibold transition shadow-sm">
+                    ← Kembali
 
-                        ← Kembali
-
-                    </a>
-                </div>
-
+                </a>
             </div>
 
         </div>
-
         <!-- FILTER -->
         <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8">
 
@@ -93,10 +88,10 @@
         </div>
 
         <!-- ACTION BUTTON -->
-<div class="flex flex-wrap gap-3 mb-6">
+        <div class="flex flex-wrap gap-3 mb-6">
 
-    <a href="{{ route('kapal.export', request()->all()) }}"
-        class="
+            <a href="{{ route('kapal.export', request()->all()) }}"
+                class="
         inline-flex items-center
         gap-2
 
@@ -119,16 +114,16 @@
 
         hover:-translate-y-1
         ">
-        Download Excel
+                Download Excel
 
-    </a>
+            </a>
 
-</div>
+        </div>
 
         <!-- TABLE -->
-        <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-3xl border  border-gray-100 shadow-sm overflow-hidden">
 
-            <div class="px-6 py-5 bg-gradient-to-r from-red-700 to-red-600">
+            <div class="px-6 py-5 bg-gradient-to-r from-red-700 to-red-600 rounded-2xl p-6 md:p-8">
 
                 <h3 class="text-white font-bold tracking-wide uppercase text-lg">
                     Hasil Preview Data

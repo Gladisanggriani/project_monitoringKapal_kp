@@ -7,6 +7,112 @@
     <title>Dashboard Monitoring Kapal</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+<style>
+    .dashboard-card {
+        position: relative;
+
+        background: white;
+
+        border-radius: 30px;
+
+        padding: 24px;
+
+        overflow: hidden;
+
+        cursor: pointer;
+
+        transition: all .35s ease;
+
+        box-shadow:
+            0 8px 25px rgba(0, 0, 0, .05);
+
+        border: none;
+    }
+
+    .dashboard-card::before {
+
+        content: '';
+
+        position: absolute;
+
+        top: 0;
+        left: 0;
+
+        width: 100%;
+        height: 4px;
+
+        background: linear-gradient(90deg,
+                #dc2626,
+                #ef4444);
+
+        transform: scaleX(0);
+
+        transition: .3s;
+    }
+
+    .dashboard-card:hover {
+
+        transform:
+            translateY(-10px) scale(1.02);
+
+        box-shadow:
+            0 25px 50px rgba(220, 38, 38, .15);
+
+        background: white;
+    }
+
+    .dashboard-card:hover::before {
+
+        transform: scaleX(1);
+    }
+
+    .dashboard-card.active {
+
+        background:
+            linear-gradient(135deg,
+                #b91c1c,
+                #ef4444);
+
+        color: white;
+
+        box-shadow:
+            0 20px 45px rgba(239, 68, 68, .35);
+    }
+
+    .dashboard-card.active p,
+    .dashboard-card.active h3 {
+
+        color: white !important;
+    }
+
+    .dashboard-card.active .icon-box {
+
+        background:
+            rgba(255, 255, 255, .2);
+    }
+
+    .icon-box {
+
+        width: 60px;
+        height: 60px;
+
+        border-radius: 20px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        font-size: 28px;
+
+        transition: .3s;
+    }
+
+    .dashboard-card:hover .icon-box {
+
+        transform: rotate(-8deg) scale(1.08);
+    }
+</style>
 
 <body class="bg-gray-50 text-gray-800 antialiased">
 
@@ -39,17 +145,14 @@
                 <p class="text-red-100 text-sm mt-1">Monitoring aktivitas kapal pengangkut semen secara real-time</p>
             </div>
             <div class="flex items-center gap-3">
-                @auth
-                    <a href="{{ route('kapal.create') }}"
-                        class="bg-white hover:bg-gray-50 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-2">
-                        <span>+ Input Data</span>
-                    </a>
-                @endauth
+                <a href="{{ route('kapal.create') }}"
+                    class="bg-white hover:bg-gray-50 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-2">
+                    <span>+ Input Data</span>
+                </a>
+
                 <a href="{{ route('kapal.preview-export') }}"
                     class="bg-red-800 hover:bg-red-900 text-white border border-red-500 px-4 py-2.5 rounded-xl text-sm font-semibold transition inline-block text-center shadow-sm">
-
                     Export Excel
-
                 </a>
             </div>
         </div>
@@ -60,23 +163,104 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-xs md:text-sm font-medium text-gray-500">Total Kapal</p>
-                <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mt-1">{{ $totalKapal }}</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+
+            <div id="card-all" onclick="filterTable('all', this)" class="dashboard-card active">
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Total Kapal
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-gray-900 mt-2">
+                            {{ $totalKapal }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-red-100">
+                        🚢
+                    </div>
+
+                </div>
+
             </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-xs md:text-sm font-medium text-gray-500">Menunggu Sandar</p>
-                <h3 class="text-2xl md:text-3xl font-bold text-amber-500 mt-1">{{ $menungguSandar }}</h3>
+
+            <div onclick="filterTable('Menunggu Sandar', this)" class="dashboard-card">
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Menunggu Sandar
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-amber-500 mt-2">
+                            {{ $menungguSandar }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-amber-100">
+                        ⏳
+                    </div>
+
+                </div>
+
             </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-xs md:text-sm font-medium text-gray-500">Sedang Muat</p>
-                <h3 class="text-2xl md:text-3xl font-bold text-blue-500 mt-1">{{ $sedangMuat }}</h3>
+
+            <div onclick="filterTable('Sedang Muat', this)" class="dashboard-card">
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Sedang Muat
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-blue-500 mt-2">
+                            {{ $sedangMuat }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-blue-100">
+                        ⚓
+                    </div>
+
+                </div>
+
             </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-xs md:text-sm font-medium text-gray-500">Selesai</p>
-                <h3 class="text-2xl md:text-3xl font-bold text-emerald-500 mt-1">{{ $selesai }}</h3>
+
+            <div onclick="filterTable('Selesai', this)" class="dashboard-card">
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Selesai
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-emerald-500 mt-2">
+                            {{ $selesai }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-emerald-100">
+                        ✅
+                    </div>
+
+                </div>
+
             </div>
+
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -109,7 +293,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-700">
                         @forelse($kapals as $index => $item)
-                            <tr class="hover:bg-red-50/60 dark:hover:bg-red-950/20 transition-colors duration-200">
+                            <tr data-status="{{ $item->status }}" class="hover:bg-red-50/60 transition duration-200">
                                 <td class="px-6 py-4 font-medium">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4">
                                     {{ \Carbon\Carbon::parse($item->tanggal_input)->format('d-m-Y') }}</td>
@@ -148,14 +332,22 @@
                                 @auth
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex justify-center items-center gap-2">
+
                                             <a href="{{ route('kapal.edit', $item->id) }}"
-                                                class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Update</a>
+                                                class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                                                Update
+                                            </a>
+
                                             <form action="{{ route('kapal.destroy', $item->id) }}" method="POST"
-                                                class="inline" onsubmit="return confirm('Hapus data kapal ini?')">
-                                                @csrf @method('DELETE')
+                                                class="inline" onsubmit="return confirm('Hapus permanen data kapal ini?')">
+                                                @csrf
+                                                @method('DELETE')
                                                 <button type="submit"
-                                                    class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Hapus</button>
+                                                    class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                                                    Hapus
+                                                </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 @endauth
@@ -171,6 +363,38 @@
             </div>
         </div>
     </main>
+    <script>
+        function filterTable(status, card) {
+
+            document
+                .querySelectorAll('.dashboard-card')
+                .forEach(c => c.classList.remove('active'));
+
+            card.classList.add('active');
+
+            const rows =
+                document.querySelectorAll(
+                    'tbody tr[data-status]'
+                );
+
+            rows.forEach(row => {
+
+                if (status === 'all') {
+
+                    row.style.display = '';
+
+                } else {
+
+                    row.style.display =
+                        row.dataset.status === status ?
+                        '' :
+                        'none';
+                }
+
+            });
+
+        }
+    </script>
 </body>
 
 </html>
