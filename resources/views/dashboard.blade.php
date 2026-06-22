@@ -4,424 +4,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Monitoring Kapal</title>
+    <title>Monitoring Kapal | Dashboard Monitoring Kapal</title>
+    <script src="https://cdn.tailwindcss.com"></script> <!-- Untuk preview jika vite tidak jalan, hapus jika sudah di lingkungan Laravel -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .dashboard-card {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all .4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #f1f5f9;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(220, 38, 38, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #fecaca;
+        }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: .3s;
+        }
+
+        .dashboard-card:hover .icon-box {
+            transform: rotate(-12deg) scale(1.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        @keyframes popupAnimation {
+            from {
+                opacity: 0;
+                transform: scale(.95) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-popup {
+            animation: popupAnimation .3s ease-out forwards;
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
 </head>
-<style>
-    .dashboard-card {
-        position: relative;
 
-        background: white;
+<body class="bg-[#f8fafc] text-slate-800 antialiased">
 
-        border-radius: 30px;
-
-        padding: 24px;
-
-        overflow: hidden;
-
-        cursor: pointer;
-
-        transition: all .35s ease;
-
-        box-shadow:
-            0 8px 25px rgba(0, 0, 0, .05);
-
-        border: none;
-    }
-
-    .dashboard-card::before {
-
-        content: '';
-
-        position: absolute;
-
-        top: 0;
-        left: 0;
-
-        width: 100%;
-        height: 4px;
-
-        background: linear-gradient(90deg,
-                #dc2626,
-                #ef4444);
-
-        transform: scaleX(0);
-
-        transition: .3s;
-    }
-
-    .dashboard-card:hover {
-
-        transform:
-            translateY(-10px) scale(1.02);
-
-        box-shadow:
-            0 25px 50px rgba(220, 38, 38, .15);
-
-        background: white;
-    }
-
-    .dashboard-card:hover::before {
-
-        transform: scaleX(1);
-    }
-
-    .dashboard-card.active {
-
-        background:
-            linear-gradient(135deg,
-                #b91c1c,
-                #ef4444);
-
-        color: white;
-
-        box-shadow:
-            0 20px 45px rgba(239, 68, 68, .35);
-    }
-
-    .dashboard-card.active p,
-    .dashboard-card.active h3 {
-
-        color: white !important;
-    }
-
-    .dashboard-card.active .icon-box {
-
-        background:
-            rgba(255, 255, 255, .2);
-    }
-
-    .icon-box {
-
-        width: 60px;
-        height: 60px;
-
-        border-radius: 20px;
-
-        display: flex;
-
-        align-items: center;
-        justify-content: center;
-
-        font-size: 28px;
-
-        transition: .3s;
-    }
-
-    .dashboard-card:hover .icon-box {
-
-        transform: rotate(-8deg) scale(1.08);
-    }
-
-    body.modal-open {
-        overflow: hidden;
-    }
-
-    @keyframes popupAnimation {
-
-        from {
-            opacity: 0;
-            transform:
-                scale(.8) translateY(40px);
-        }
-
-        to {
-            opacity: 1;
-            transform:
-                scale(1) translateY(0);
-        }
-    }
-
-    .animate-popup {
-
-        animation:
-            popupAnimation .35s ease;
-    }
-</style>
-
-<body class="bg-gray-50 text-gray-800 antialiased">
-
-    <nav class="bg-white shadow-sm border-b border-gray-100">
+    <!-- Navigasi Modern -->
+    <nav class="glass-nav sticky top-0 z-40 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-gray-900 tracking-tight">Dashboard Aplikasi Monitoring Kapal</h1>
-            <div>
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto">
+                <div class="flex flex-col">
+                    <span class="font-extrabold text-slate-900 tracking-tight text-lg">
+                        Aplikasi Monitoring <span class="text-red-600">Kapal</span>
+                    </span>
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">PT Semen Padang — Unit
+                        Pabrik Dumai</span>
+                </div>
+            </div>
+
+
+            <div class="flex items-center gap-4">
                 @auth
-                    <span class="text-sm text-gray-500 mr-4">Halo, {{ Auth::user()->name }}</span>
+                    <div class="flex flex-col items-end mr-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Administrator</span>
+                        <span class="text-sm font-bold text-slate-800">{{ Auth::user()->name }}</span>
+                    </div>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit"
-                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">Logout</button>
+                            class="p-2.5 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 transition-all duration-200 group">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </button>
                     </form>
                 @else
                     <a href="{{ route('login') }}"
-                        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition">Login
-                        Admin</a>
+                        class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-slate-200 transition-all active:scale-95">
+                        Sign In
+                    </a>
                 @endauth
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
 
+        <!-- Hero Section -->
         <div
-            class="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl p-6 md:p-8 text-white shadow-md mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">MONITORING KAPAL</h2>
-                <p class="text-red-100 text-sm mt-1">Monitoring aktivitas kapal pengangkut semen secara real-time</p>
-            </div>
-            <div class="flex items-center gap-3">
-                @if (Auth::check() && Auth::user()->role === 'admin')
-                    <a href="{{ route('kapal.create') }}"
-                        class="bg-white hover:bg-gray-50 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-2">
-                        <span>+ Input Data</span>
+            class="relative overflow-hidden bg-gradient-to-br from-red-700 via-red-600 to-orange-600 rounded-[2rem] p-8 md:p-12 text-white shadow-2xl shadow-red-200 mb-10">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div class="max-w-2xl">
+                    <span
+                        class="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-widest mb-4">
+                        Real-time Monitoring
+                    </span>
+                    <h2 class="text-3xl md:text-3xl font-black tracking-tight leading-tight">DASHBOARD<br>MONITORING
+                        KAPAL
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                    @auth
+                        <a href="{{ route('kapal.create') }}"
+                            class="bg-white text-red-600 hover:bg-red-50 px-6 py-3.5 rounded-2xl text-sm font-extrabold shadow-xl transition-all flex items-center gap-3 active:scale-95">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 4v16m8-8H4" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                            INPUT DATA
+                        </a>
+                    @endauth
+                    <a href="{{ route('kapal.preview-export') }}"
+                        class="bg-red-800/40 hover:bg-red-800/60 text-white border border-white/30 backdrop-blur-md px-6 py-3.5 rounded-2xl text-sm font-extrabold transition-all active:scale-95">
+                        EXPORT EXCEL
                     </a>
-                @endif
-
-                <a href="{{ route('kapal.preview-export') }}"
-                    class="bg-red-800 hover:bg-red-900 text-white border border-red-500 px-4 py-2.5 rounded-xl text-sm font-semibold transition inline-block text-center shadow-sm">
-                    Export Excel
-                </a>
+                </div>
+            </div>
+            <!-- Dekorasi Abstrak -->
+            <div
+                class="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-white/10 rounded-full blur-3xl">
+            </div>
+            <div
+                class="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-64 h-64 bg-red-900/20 rounded-full blur-3xl">
             </div>
         </div>
 
         @if (session('sukses'))
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl mb-6 text-sm">
-                {{ session('sukses') }}
+            <div
+                class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl mb-8 flex items-center gap-3 animate-popup">
+                <svg class="w-6 h-6 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                </svg>
+                <span class="font-bold">{{ session('sukses') }}</span>
             </div>
         @endif
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-
-            <div onclick='showKapal(
-"🚢 Daftar Kapal Hari Ini",
-@json($kapals->pluck('nama_kapal')->toArray())
-)' class="dashboard-card">
-                <div class="flex justify-between items-center">
-
+        <!-- Grid Statistik -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <!-- Total -->
+            <div onclick='showKapal("🚢 Daftar Kapal Hari Ini", @json($kapals->pluck('nama_kapal')->toArray()))' class="dashboard-card">
+                <div class="flex justify-between items-start">
                     <div>
+                        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Total Kapal</p>
+                        <h3 class="text-4xl font-black text-slate-900 mt-2">{{ $totalKapal }}</h3>
+                    </div>
+                    <div class="icon-box bg-slate-100 text-slate-600">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 14l-7 7m0 0l-7-7m7 7V3" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
 
-                        <p class="text-sm font-medium text-gray-500">
-                            Total Kapal
-                        </p>
+            <!-- Menunggu -->
+            <div onclick='showKapal("⏳ Kapal Menunggu Sandar", @json($kapals->where('status', 'Menunggu Sandar')->pluck('nama_kapal')->toArray()))'
+                class="dashboard-card border-l-4 border-l-amber-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-bold text-amber-500 uppercase tracking-widest">Menunggu</p>
+                        <h3 class="text-4xl font-black text-slate-900 mt-2">{{ $menungguSandar }}</h3>
+                    </div>
+                    <div class="icon-box bg-amber-50 text-amber-600">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
 
-                        <h3 class="text-4xl font-bold text-gray-900 mt-2">
-                            {{ $totalKapal }}
-                        </h3>
+            <!-- Muat -->
+            <div onclick='showKapal("⚓ Kapal Sedang Muat", @json($kapals->where('status', 'Sedang Muat')->pluck('nama_kapal')->toArray()))'
+                class="dashboard-card border-l-4 border-l-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-bold text-blue-500 uppercase tracking-widest">Sedang Muat</p>
+                        <h3 class="text-4xl font-black text-slate-900 mt-2">{{ $sedangMuat }}</h3>
+                    </div>
+                    <div class="icon-box bg-blue-50 text-blue-600">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Selesai -->
+            <div onclick='showKapal("✅ Kapal Selesai", @json($kapalsSelesai->pluck('nama_kapal')->toArray()))'
+                class="dashboard-card border-l-4 border-l-emerald-500">
+
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-bold text-emerald-500 uppercase tracking-widest">Selesai</p>
+                        <h3 class="text-4xl font-black text-slate-900 mt-2">{{ $selesai }}</h3>
                     </div>
 
-                    <div class="icon-box" style="background:#ffb0b0;">
-                        🚢
+                    <div class="icon-box bg-emerald-50 text-emerald-600">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M5 13l4 4L19 7" stroke-width="2" />
+                        </svg>
                     </div>
-
                 </div>
 
             </div>
-
-            <div onclick='showKapal(
-"⏳ Kapal Menunggu Sandar",
-@json($kapals->where('status', 'Menunggu Sandar')->pluck('nama_kapal')->toArray())
-)' class="dashboard-card">
-                <div class="flex justify-between items-center">
-
-                    <div>
-
-                        <p class="text-sm font-medium text-gray-500">
-                            Menunggu Sandar
-                        </p>
-
-                        <h3 class="text-4xl font-bold text-amber-500 mt-2">
-                            {{ $menungguSandar }}
-                        </h3>
-
-                    </div>
-
-                    <div class="icon-box bg-amber-100">
-                        ⏳
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div onclick='showKapal(
-"⚓ Kapal Sedang Muat",
-@json($kapals->where('status', 'Sedang Muat')->pluck('nama_kapal')->toArray())
-)' class="dashboard-card">
-                <div class="flex justify-between items-center">
-
-                    <div>
-
-                        <p class="text-sm font-medium text-gray-500">
-                            Sedang Muat
-                        </p>
-
-                        <h3 class="text-4xl font-bold text-blue-500 mt-2">
-                            {{ $sedangMuat }}
-                        </h3>
-
-                    </div>
-
-                    <div class="icon-box bg-blue-100">
-                        ⚓
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div onclick='showKapal(
-"✅ Kapal Selesai",
-@json($kapals->where('status', 'Selesai')->pluck('nama_kapal')->toArray())
-)' class="dashboard-card">
-
-                <div class="flex justify-between items-center">
-
-                    <div>
-
-                        <p class="text-sm font-medium text-gray-500">
-                            Selesai
-                        </p>
-
-                        <h3 class="text-4xl font-bold text-emerald-500 mt-2">
-                            {{ $selesai }}
-                        </h3>
-
-                    </div>
-
-                    <div class="icon-box bg-emerald-100">
-                        ✅
-                    </div>
-
-                </div>
-
-            </div>
-
         </div>
 
-        </div>
-
-        <script>
-            const kapalData = {
-                all: [
-                    @foreach ($kapals as $kapal)
-                        "{{ $kapal->nama_kapal }}",
-                    @endforeach
-                ],
-
-                menunggu: [
-                    @foreach ($kapals->where('status', 'Menunggu Sandar') as $kapal)
-                        "{{ $kapal->nama_kapal }}",
-                    @endforeach
-                ],
-
-                muat: [
-                    @foreach ($kapals->where('status', 'Sedang Muat') as $kapal)
-                        "{{ $kapal->nama_kapal }}",
-                    @endforeach
-                ],
-
-                selesai: [
-                    @foreach ($kapals->where('status', 'Selesai') as $kapal)
-                        "{{ $kapal->nama_kapal }}",
-                    @endforeach
-                ]
-            };
-        </script>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-
-            <div class="px-6 py-6 bg-gradient-to-r from-red-700 to-red-600 shadow-md rounded-t-2xl">
-                <h3 class="font-extrabold text-white tracking-wider text-lg md:text-xl uppercase">
-                    Data Monitoring Kapal
+        <!-- Tabel Monitoring Modern -->
+        <div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-extrabold text-slate-900 text-xl flex items-center gap-3">
+                    <span class="w-2 h-8 bg-red-600 rounded-full"></span>
+                    LOG MONITORING
                 </h3>
+                <span class="px-4 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-bold tracking-widest">
+                    {{ count($kapals) }} RECORDS
+                </span>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm whitespace-nowrap">
-                    <thead class="bg-gray-50 text-gray-700 text-xs uppercase font-bold border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3 text-center">No</th>
-                            <th class="px-6 py-3">Tanggal Input</th>
-                            <th class="px-6 py-3">Nama Kapal</th>
-                            <th class="px-6 py-3 text-center">Qty</th>
-                            <th class="px-6 py-3">Agen</th>
-                            <th class="px-6 py-3">Jenis Muatan</th>
-                            <th class="px-6 py-3 text-center">Tanggal Sandar</th>
-                            <th class="px-6 py-3 text-center">Tanggal Muat</th>
-                            <th class="px-6 py-3 text-center">Tanggal Selesai</th>
-                            <th class="px-6 py-3 text-center">Status</th>
-
-                            @auth
-                                <th class="px-6 py-3 text-center">AKSI</th>
-                            @endauth
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">No</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Nama Kapal
+                            </th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
+                                Qty</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Agen /
+                                Muatan</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
+                                Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Timeline
+                            </th>
+                            @auth <th
+                                    class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
+                                Aksi</th> @endauth
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                    <tbody class="divide-y divide-slate-100">
                         @forelse($kapals as $index => $item)
-                            <tr data-status="{{ $item->status }}" class="hover:bg-red-50/60 transition duration-200">
-                                <td class="px-6 py-4 font-medium">{{ $index + 1 }}</td>
-                                <td class="px-6 py-4">
-                                    {{ \Carbon\Carbon::parse($item->tanggal_input)->format('d-m-Y') }}</td>
-                                <td class="px-6 py-4 font-semibold text-gray-900">{{ $item->nama_kapal }}</td>
-                                <td class="px-6 py-4">{{ $item->qty }}</td>
-                                <td class="px-6 py-4">{{ $item->agen }}</td>
-                                <td class="px-6 py-4">{{ $item->jenis_muatan }}</td>
-
-                                <td class="px-6 py-4">
-                                    {{ $item->tanggal_sandar ? \Carbon\Carbon::parse($item->tanggal_sandar)->format('d-m-Y H:i') : '-' }}
+                            <tr class="hover:bg-slate-50/80 transition-colors duration-200 group">
+                                <td class="px-6 py-5 text-sm font-bold text-slate-400">{{ $index + 1 }}</td>
+                                <td class="px-6 py-5">
+                                    <div class="font-bold text-slate-900">{{ $item->nama_kapal }}</div>
+                                    <div class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-tighter">
+                                        ID: {{ $item->id }}</div>
                                 </td>
-
-                                <td class="px-6 py-4">
-                                    {{ $item->tanggal_muat ? \Carbon\Carbon::parse($item->tanggal_muat)->format('d-m-Y H:i') : '-' }}
+                                <td class="px-6 py-5 text-center font-black text-slate-700">
+                                    {{ number_format($item->qty) }}</td>
+                                <td class="px-6 py-5">
+                                    <div class="text-sm font-bold text-slate-800">{{ $item->agen }}</div>
+                                    <div class="text-xs text-slate-500 font-medium italic mt-0.5">
+                                        {{ $item->jenis_muatan }}</div>
                                 </td>
-
-                                <td class="px-6 py-4">
-                                    {{ $item->tanggal_selesai ? \Carbon\Carbon::parse($item->tanggal_selesai)->format('d-m-Y H:i') : '-' }}
+                                <td class="px-6 py-5 text-center">
+                                    @php
+                                        $statusStyles = [
+                                            'Selesai' => 'bg-emerald-100 text-emerald-700',
+                                            'Sedang Muat' => 'bg-blue-100 text-blue-700',
+                                            'Menunggu Sandar' => 'bg-amber-100 text-amber-700',
+                                        ];
+                                    @endphp
+                                    <span
+                                        class="px-4 py-1.5 {{ $statusStyles[$item->status] ?? 'bg-slate-100' }} rounded-full text-[11px] font-black uppercase tracking-wider">
+                                        {{ $item->status }}
+                                    </span>
                                 </td>
-
-                                <td class="px-6 py-4">
-                                    @if ($item->status == 'Selesai')
-                                        <span
-                                            class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-medium text-xs">Selesai</span>
-                                    @elseif($item->status == 'Sedang Muat')
-                                        <span
-                                            class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-xs">Sedang
-                                            Muat</span>
-                                    @else
-                                        <span
-                                            class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-medium text-xs">Menunggu
-                                            Sandar</span>
-                                    @endif
+                                <td class="px-6 py-5">
+                                    <div class="flex flex-col gap-1 text-[11px]">
+                                        <div class="flex justify-between"><span class="text-slate-400">Sandar:</span>
+                                            <span
+                                                class="font-bold">{{ $item->tanggal_sandar ? date('d/m H:i', strtotime($item->tanggal_sandar)) : '-' }}</span>
+                                        </div>
+                                        <div class="flex justify-between"><span class="text-slate-400">Selesai:</span>
+                                            <span
+                                                class="font-bold text-emerald-600">{{ $item->tanggal_selesai ? date('d/m H:i', strtotime($item->tanggal_selesai)) : '-' }}</span>
+                                        </div>
+                                    </div>
                                 </td>
-
                                 @auth
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex justify-center items-center gap-2">
-
+                                    <td class="px-6 py-5">
+                                        <div class="flex justify-center gap-2">
                                             <a href="{{ route('kapal.edit', $item->id) }}"
-                                                class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
-                                                Update
+                                                class="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-500 hover:text-white transition-all duration-200">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                        stroke-width="2" />
+                                                </svg>
                                             </a>
-
                                             <form action="{{ route('kapal.destroy', $item->id) }}" method="POST"
-                                                class="inline" onsubmit="return confirm('Hapus permanen data kapal ini?')">
-                                                @csrf
-                                                @method('DELETE')
+                                                class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                                @csrf @method('DELETE')
                                                 <button type="submit"
-                                                    class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
-                                                    Hapus
+                                                    class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-200">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                            stroke-width="2" />
+                                                    </svg>
                                                 </button>
                                             </form>
-
                                         </div>
                                     </td>
                                 @endauth
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="@auth 11 @else 10 @endauth" class="text-center py-8 text-gray-400 italic">
-                                    Belum ada data monitoring kapal.</td>
+                                <td colspan="100%" class="text-center py-20">
+                                    <div class="flex flex-col items-center opacity-20">
+                                        <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <p class="text-xl font-black uppercase tracking-widest">Belum ada data</p>
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -430,150 +375,79 @@
         </div>
     </main>
 
-    <!-- MODAL PREMIUM -->
-    <div id="infoModal" class="hidden fixed inset-0 z-[99999]">
-
-        <!-- Overlay -->
-        <div onclick="closeModal()" class="absolute inset-0"
-            style="
-        background:rgba(0,0,0,.45);
-        backdrop-filter:blur(8px);
-        -webkit-backdrop-filter:blur(8px);">
+    <!-- MODAL PREMIUM (Glassmorphism) -->
+    <div id="infoModal" class="hidden fixed inset-0 z-[100]  items-center justify-center px-4">
+        <div onclick="closeModal()" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity">
         </div>
-
-        <!-- Popup -->
-        <div class="fixed inset-0 flex items-center justify-center px-4">
-            <div class="animate-popup bg-white overflow-hidden"
-                style="width:520px; max-width:92%;
-        border-radius:28px;
-        box-shadow:
-            0 30px 80px rgba(0,0,0,.18),
-            0 10px 30px rgba(220,38,38,.12);">
-
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-red-700 to-red-600 px-6 py-5">
-
-                    <div class="flex justify-between items-center">
-
-                        <h2 id="modalTitle" class="text-xl font-bold text-white">
-                        </h2>
-
-                        <button type="button" onclick="closeModal(); return false;"
-                            class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white transition">
-                            ✕
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <!-- Body -->
-                <div class="p-6">
-                    <div class="bg-gray-50 rounded-2xl p-5 max-h-[400px] overflow-y-auto">
-                        <div id="modalText">
-                        </div>
-                    </div>
-
-                    <button type="button" onclick="closeModal(); return false;"
-                        class="w-full mt-5 bg-gradient-to-r from-red-700 to-red-600 text-white py-3 rounded-xl font-semibold">
-                        Tutup
-                    </button>
-
-                </div>
-
+        <div
+            class="relative bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl animate-popup border border-white">
+            <div
+                class="bg-gradient-to-r from-red-700 to-red-600 px-8 py-6 text-white flex justify-between items-center">
+                <h2 id="modalTitle" class="text-xl font-black uppercase tracking-wider"></h2>
+                <button onclick="closeModal()"
+                    class="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-all">✕</button>
             </div>
-
+            <div class="p-8">
+                <div class="bg-slate-50 rounded-3xl p-6 max-h-[60vh] overflow-y-auto" id="modalText">
+                    <!-- Data injected via JS -->
+                </div>
+                <button onclick="closeModal()"
+                    class="w-full mt-8 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-slate-200 hover:shadow-none transition-all active:scale-95">
+                    Selesai
+                </button>
+            </div>
         </div>
-
     </div>
+    <footer class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-3 text-xs font-semibold text-slate-400">
+                <p>&copy; {{ date('Y') }} PT Semen Padang. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script>
         function showKapal(title, data) {
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            const modal = document.getElementById('infoModal');
 
-            document.getElementById('modalTitle').innerHTML = title;
-
+            modalTitle.innerText = title;
             let html = '';
 
             if (data.length === 0) {
-
                 html = `
-                <div class="text-center py-10">
-                    <div class="text-5xl mb-3">🚢</div>
-                    <div class="text-gray-500">
-                        Tidak ada data kapal
-                    </div>
-                </div>
-            `;
-
+                    <div class="text-center py-10 opacity-40">
+                        <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                        <p class="font-bold uppercase tracking-widest">Kosong</p>
+                    </div>`;
             } else {
-
-                html += `
-                <div class="mb-4 text-sm text-gray-500">
-                    Total Kapal : <b>${data.length}</b>
-                </div>
-            `;
-
-                data.forEach(function(item) {
-
+                html = `<div class="grid gap-3">`;
+                data.forEach(item => {
                     html += `
-                    <div class="
-                        flex items-center gap-4
-                        bg-gradient-to-r from-red-50 to-white
-                        border border-red-100
-                        rounded-2xl
-                        px-4 py-3
-                        mb-3
-                        hover:shadow-md
-                        transition">
-
-                        <div class="
-                            w-12 h-12
-                            flex items-center justify-center
-                            rounded-full
-                            bg-red-100
-                            text-xl">
-                            🚢
-                        </div>
-
-                        <div>
-                            <div class="font-semibold text-gray-800">
-                                ${item}
+                        <div class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center font-bold">
+                                🚢
                             </div>
-
-                            <div class="text-xs text-gray-500">
-                                Monitoring Kapal
-                            </div>
-                        </div>
-
-                    </div>
-                `;
+                            <div class="font-extrabold text-slate-800 uppercase tracking-tight">${item}</div>
+                        </div>`;
                 });
-
+                html += `</div>`;
             }
 
-            document.getElementById('modalText').innerHTML = html;
-
-            document.getElementById('infoModal')
-                .classList.remove('hidden');
-
-            document.body.classList.add('modal-open');
+            modalText.innerHTML = html;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
-
-            document.getElementById('infoModal')
-                .classList.add('hidden');
-
-            document.body.classList.remove('modal-open');
+            document.getElementById('infoModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
-        document.addEventListener('keydown', function(e) {
-
-            if (e.key === 'Escape') {
-
-                closeModal();
-            }
-
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
         });
     </script>
 </body>

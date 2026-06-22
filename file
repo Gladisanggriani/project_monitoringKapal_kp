@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Monitoring Kapal</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<style>
+    .dashboard-card {
+        position: relative;
+
+        background: white;
+
+        border-radius: 30px;
+
+        padding: 24px;
+
+        overflow: hidden;
+
+        cursor: pointer;
+
+        transition: all .35s ease;
+
+        box-shadow:
+            0 8px 25px rgba(0, 0, 0, .05);
+
+        border: none;
+    }
+
+    .dashboard-card::before {
+
+        content: '';
+
+        position: absolute;
+
+        top: 0;
+        left: 0;
+
+        width: 100%;
+        height: 4px;
+
+        background: linear-gradient(90deg,
+                #dc2626,
+                #ef4444);
+
+        transform: scaleX(0);
+
+        transition: .3s;
+    }
+
+    .dashboard-card:hover {
+
+        transform:
+            translateY(-10px) scale(1.02);
+
+        box-shadow:
+            0 25px 50px rgba(220, 38, 38, .15);
+
+        background: white;
+    }
+
+    .dashboard-card:hover::before {
+
+        transform: scaleX(1);
+    }
+
+    .dashboard-card.active {
+
+        background:
+            linear-gradient(135deg,
+                #b91c1c,
+                #ef4444);
+
+        color: white;
+
+        box-shadow:
+            0 20px 45px rgba(239, 68, 68, .35);
+    }
+
+    .dashboard-card.active p,
+    .dashboard-card.active h3 {
+
+        color: white !important;
+    }
+
+    .dashboard-card.active .icon-box {
+
+        background:
+            rgba(255, 255, 255, .2);
+    }
+
+    .icon-box {
+
+        width: 60px;
+        height: 60px;
+
+        border-radius: 20px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        font-size: 28px;
+
+        transition: .3s;
+    }
+
+    .dashboard-card:hover .icon-box {
+
+        transform: rotate(-8deg) scale(1.08);
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    @keyframes popupAnimation {
+
+        from {
+            opacity: 0;
+            transform:
+                scale(.8) translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform:
+                scale(1) translateY(0);
+        }
+    }
+
+    .animate-popup {
+
+        animation:
+            popupAnimation .35s ease;
+    }
+</style>
+
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <nav class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-900 tracking-tight">Dashboard Aplikasi Monitoring Kapal</h1>
+            <div>
+                @auth
+                    <span class="text-sm text-gray-500 mr-4">Halo, {{ Auth::user()->name }}</span>
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition">Login
+                        Admin</a>
+                @endauth
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div
+            class="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl p-6 md:p-8 text-white shadow-md mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">MONITORING KAPAL</h2>
+                <p class="text-red-100 text-sm mt-1">Monitoring aktivitas kapal pengangkut semen secara real-time</p>
+            </div>
+            <div class="flex items-center gap-3">
+                @if (Auth::check() && Auth::user()->role === 'admin')
+                    <a href="{{ route('kapal.create') }}"
+                        class="bg-white hover:bg-gray-50 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-2">
+                        <span>+ Input Data</span>
+                    </a>
+                @endif
+
+                <a href="{{ route('kapal.preview-export') }}"
+                    class="bg-red-800 hover:bg-red-900 text-white border border-red-500 px-4 py-2.5 rounded-xl text-sm font-semibold transition inline-block text-center shadow-sm">
+                    Export Excel
+                </a>
+            </div>
+        </div>
+
+        @if (session('sukses'))
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl mb-6 text-sm">
+                {{ session('sukses') }}
+            </div>
+        @endif
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+
+            <div onclick='showKapal(
+"🚢 Daftar Kapal Hari Ini",
+@json($kapals->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Total Kapal
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-gray-900 mt-2">
+                            {{ $totalKapal }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box" style="background:#ffb0b0;">
+                        🚢
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div onclick='showKapal(
+"⏳ Kapal Menunggu Sandar",
+@json($kapals->where('status', 'Menunggu Sandar')->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Menunggu Sandar
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-amber-500 mt-2">
+                            {{ $menungguSandar }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-amber-100">
+                        ⏳
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div onclick='showKapal(
+"⚓ Kapal Sedang Muat",
+@json($kapals->where('status', 'Sedang Muat')->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Sedang Muat
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-blue-500 mt-2">
+                            {{ $sedangMuat }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-blue-100">
+                        ⚓
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div onclick='showKapal(
+"✅ Kapal Selesai",
+@json($kapals->where('status', 'Selesai')->pluck('nama_kapal')->toArray())
+)' class="dashboard-card">
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Selesai
+                        </p>
+
+                        <h3 class="text-4xl font-bold text-emerald-500 mt-2">
+                            {{ $selesai }}
+                        </h3>
+
+                    </div>
+
+                    <div class="icon-box bg-emerald-100">
+                        ✅
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        </div>
+
+        <script>
+            const kapalData = {
+                all: [
+                    @foreach ($kapals as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ],
+
+                menunggu: [
+                    @foreach ($kapals->where('status', 'Menunggu Sandar') as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ],
+
+                muat: [
+                    @foreach ($kapals->where('status', 'Sedang Muat') as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ],
+
+                selesai: [
+                    @foreach ($kapals->where('status', 'Selesai') as $kapal)
+                        "{{ $kapal->nama_kapal }}",
+                    @endforeach
+                ]
+            };
+        </script>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+            <div class="px-6 py-6 bg-gradient-to-r from-red-700 to-red-600 shadow-md rounded-t-2xl">
+                <h3 class="font-extrabold text-white tracking-wider text-lg md:text-xl uppercase">
+                    Data Monitoring Kapal
+                </h3>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-gray-50 text-gray-700 text-xs uppercase font-bold border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-center">No</th>
+                            <th class="px-6 py-3">Tanggal Input</th>
+                            <th class="px-6 py-3">Nama Kapal</th>
+                            <th class="px-6 py-3 text-center">Qty</th>
+                            <th class="px-6 py-3">Agen</th>
+                            <th class="px-6 py-3">Jenis Muatan</th>
+                            <th class="px-6 py-3 text-center">Tanggal Sandar</th>
+                            <th class="px-6 py-3 text-center">Tanggal Muat</th>
+                            <th class="px-6 py-3 text-center">Tanggal Selesai</th>
+                            <th class="px-6 py-3 text-center">Status</th>
+
+                            @auth
+                                <th class="px-6 py-3 text-center">AKSI</th>
+                            @endauth
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                        @forelse($kapals as $index => $item)
+                            <tr data-status="{{ $item->status }}" class="hover:bg-red-50/60 transition duration-200">
+                                <td class="px-6 py-4 font-medium">{{ $index + 1 }}</td>
+                                <td class="px-6 py-4">
+                                    {{ \Carbon\Carbon::parse($item->tanggal_input)->format('d-m-Y') }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-900">{{ $item->nama_kapal }}</td>
+                                <td class="px-6 py-4">{{ $item->qty }}</td>
+                                <td class="px-6 py-4">{{ $item->agen }}</td>
+                                <td class="px-6 py-4">{{ $item->jenis_muatan }}</td>
+
+                                <td class="px-6 py-4">
+                                    {{ $item->tanggal_sandar ? \Carbon\Carbon::parse($item->tanggal_sandar)->format('d-m-Y H:i') : '-' }}
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    {{ $item->tanggal_muat ? \Carbon\Carbon::parse($item->tanggal_muat)->format('d-m-Y H:i') : '-' }}
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    {{ $item->tanggal_selesai ? \Carbon\Carbon::parse($item->tanggal_selesai)->format('d-m-Y H:i') : '-' }}
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    @if ($item->status == 'Selesai')
+                                        <span
+                                            class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-medium text-xs">Selesai</span>
+                                    @elseif($item->status == 'Sedang Muat')
+                                        <span
+                                            class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-xs">Sedang
+                                            Muat</span>
+                                    @else
+                                        <span
+                                            class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-medium text-xs">Menunggu
+                                            Sandar</span>
+                                    @endif
+                                </td>
+
+                                @auth
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex justify-center items-center gap-2">
+
+                                            <a href="{{ route('kapal.edit', $item->id) }}"
+                                                class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                                                Update
+                                            </a>
+
+                                            <form action="{{ route('kapal.destroy', $item->id) }}" method="POST"
+                                                class="inline" onsubmit="return confirm('Hapus permanen data kapal ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                                                    Hapus
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                @endauth
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="@auth 11 @else 10 @endauth" class="text-center py-8 text-gray-400 italic">
+                                    Belum ada data monitoring kapal.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL PREMIUM -->
+    <div id="infoModal" class="hidden fixed inset-0 z-[99999]">
+
+        <!-- Overlay -->
+        <div onclick="closeModal()" class="absolute inset-0"
+            style="
+        background:rgba(0,0,0,.45);
+        backdrop-filter:blur(8px);
+        -webkit-backdrop-filter:blur(8px);">
+        </div>
+
+        <!-- Popup -->
+        <div class="fixed inset-0 flex items-center justify-center px-4">
+            <div class="animate-popup bg-white overflow-hidden"
+                style="width:520px; max-width:92%;
+        border-radius:28px;
+        box-shadow:
+            0 30px 80px rgba(0,0,0,.18),
+            0 10px 30px rgba(220,38,38,.12);">
+
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-700 to-red-600 px-6 py-5">
+
+                    <div class="flex justify-between items-center">
+
+                        <h2 id="modalTitle" class="text-xl font-bold text-white">
+                        </h2>
+
+                        <button type="button" onclick="closeModal(); return false;"
+                            class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white transition">
+                            ✕
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- Body -->
+                <div class="p-6">
+                    <div class="bg-gray-50 rounded-2xl p-5 max-h-[400px] overflow-y-auto">
+                        <div id="modalText">
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="closeModal(); return false;"
+                        class="w-full mt-5 bg-gradient-to-r from-red-700 to-red-600 text-white py-3 rounded-xl font-semibold">
+                        Tutup
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function showKapal(title, data) {
+
+            document.getElementById('modalTitle').innerHTML = title;
+
+            let html = '';
+
+            if (data.length === 0) {
+
+                html = `
+                <div class="text-center py-10">
+                    <div class="text-5xl mb-3">🚢</div>
+                    <div class="text-gray-500">
+                        Tidak ada data kapal
+                    </div>
+                </div>
+            `;
+
+            } else {
+
+                html += `
+                <div class="mb-4 text-sm text-gray-500">
+                    Total Kapal : <b>${data.length}</b>
+                </div>
+            `;
+
+                data.forEach(function(item) {
+
+                    html += `
+                    <div class="
+                        flex items-center gap-4
+                        bg-gradient-to-r from-red-50 to-white
+                        border border-red-100
+                        rounded-2xl
+                        px-4 py-3
+                        mb-3
+                        hover:shadow-md
+                        transition">
+
+                        <div class="
+                            w-12 h-12
+                            flex items-center justify-center
+                            rounded-full
+                            bg-red-100
+                            text-xl">
+                            🚢
+                        </div>
+
+                        <div>
+                            <div class="font-semibold text-gray-800">
+                                ${item}
+                            </div>
+
+                            <div class="text-xs text-gray-500">
+                                Monitoring Kapal
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+                });
+
+            }
+
+            document.getElementById('modalText').innerHTML = html;
+
+            document.getElementById('infoModal')
+                .classList.remove('hidden');
+
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+
+            document.getElementById('infoModal')
+                .classList.add('hidden');
+
+            document.body.classList.remove('modal-open');
+        }
+
+        document.addEventListener('keydown', function(e) {
+
+            if (e.key === 'Escape') {
+
+                closeModal();
+            }
+
+        });
+    </script>
+</body>
+
+</html>
+
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Aktivitas Kapal | ShipWatch Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f8fafc;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+        }
+
+        .input-field {
+            width: 100%;
+            margin-top: 6px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #dbe3ec;
+            background: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all .2s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, .08);
+        }
+
+        .label-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .section-number {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-title {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen pb-20">
+
+    <!-- Navbar / Breadcrumb -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 mb-10">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="{{ route('dashboard') }}"
+                class="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-red-600 transition-colors group">
+                <div class="p-2 rounded-xl group-hover:bg-red-50 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                Kembali ke Dashboard
+            </a>
+            <div class="px-4 py-1.5 bg-slate-900 rounded-full">
+                <span class="text-[10px] font-black text-white uppercase tracking-widest">Update Mode</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4">
+
+        <!-- Judul Halaman -->
+        <div class="mb-8 flex items-center gap-4">
+            <div
+                class="w-12 h-12 bg-red-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-red-100">
+
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-900">
+                    Edit Aktivitas <span class="text-red-600">Kapal</span>
+                </h2>
+
+                <p class="text-slate-500 text-sm">
+                    Perbarui data aktivitas operasional kapal.
+                </p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="grid md:grid-cols-4 gap-5">
+
+                <div>
+                    <p class="summary-title">Nama Kapal</p>
+                    <p class="summary-value">{{ $kapal->nama_kapal }}</p>
+                </div>
+
+                <div>
+                    <p class="summary-title">Agen</p>
+                    <p class="summary-value">{{ $kapal->agen }}</p>
+                </div>
+
+                <div>
+                    <p class="summary-title">Qty Muatan</p>
+                    <p class="summary-value">{{ number_format($kapal->qty) }} Ton</p>
+                </div>
+
+                <div>
+                    <p class="summary-title">Status Saat Ini</p>
+
+                    <span class="status-badge">
+                        {{ $kapal->status }}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+        <form action="{{ route('kapal.update', $kapal->id) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="space-y-8">
+
+                <!-- SECTION 1: INFORMASI UMUM -->
+                <div class="section-header">
+                    <div class="section-number bg-red-100 text-red-600">
+                        01
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-800">
+                            Informasi Umum
+                        </h3>
+
+                        <p class="text-sm text-slate-500">
+                            Data utama aktivitas kapal.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: WAKTU OPERASIONAL -->
+                <div class="section-header">
+                    <div class="section-number bg-amber-100 text-amber-600">
+                        02
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-800">
+                            Waktu Operasional
+                        </h3>
+
+                        <p class="text-sm text-slate-500">
+                            Informasi proses sandar dan pemuatan.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: STATUS AKHIR -->
+                <div class="form-card p-8 border-l-4 border-l-green-500">
+
+                    <div class="section-header">
+
+                        <div class="section-number bg-green-100 text-green-600">
+                            03
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-slate-800">
+                                Status Operasional
+                            </h3>
+
+                            <p class="text-sm text-slate-500">
+                                Tentukan status terbaru kapal.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="md:w-1/2">
+
+                        <label class="label-text">
+                            Status Kapal
+                        </label>
+
+                        <select name="status" required class="input-field font-semibold">
+
+                            <option value="Menunggu Sandar" {{ $kapal->status == 'Menunggu Sandar' ? 'selected' : '' }}>
+                                Menunggu Sandar
+                            </option>
+
+                            <option value="Sedang Muat" {{ $kapal->status == 'Sedang Muat' ? 'selected' : '' }}>
+                                Sedang Muat
+                            </option>
+
+                            <option value="Selesai" {{ $kapal->status == 'Selesai' ? 'selected' : '' }}>
+                                Selesai
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col-reverse md:flex-row justify-end gap-4 mt-10">
+
+                    <a href="{{ route('dashboard') }}"
+                        class="px-8 py-3 rounded-xl border border-slate-300 text-slate-600 text-center font-semibold hover:bg-slate-50 transition">
+
+                        Batal
+
+                    </a>
+
+                    <button type="submit"
+                        class="px-8 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-md transition-all">
+
+                        Simpan Perubahan
+
+                    </button>
+
+                </div>
+            </div>
+        </form>
+    </main>
+
+</body>
+
+</html>
